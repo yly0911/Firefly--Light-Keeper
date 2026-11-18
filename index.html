@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>萤灯拾光 · Firefly Lantern</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='16' fill='%239dfbe0'/%3E%3Ccircle cx='32' cy='36' r='7' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div class="hud" id="hud">
+    <div class="hud-top">
+      <div class="panel timer" id="timerPanel">
+        <span class="label" id="nightLabel">第一夜</span>
+        <span class="value" id="timeVal">01:30</span>
+      </div>
+      <div class="panel lanterns" id="lanternHud">
+        <div class="chip" data-i="0"><i></i><b>0</b><em>/5</em></div>
+        <div class="chip" data-i="1"><i></i><b>0</b><em>/5</em></div>
+        <div class="chip" data-i="2"><i></i><b>0</b><em>/5</em></div>
+      </div>
+      <div class="panel carry" id="carryPanel">
+        <span class="label">星露</span><b id="carryVal">0</b><em>/6</em>
+      </div>
+    </div>
+    <div class="hint" id="hintEl"><b>WASD</b> 移动 · <b>空格</b> 冲刺 · <b>E</b> 注入萤灯</div>
+  </div>
+
+  <!-- Home -->
+  <div class="screen home show" id="startScreen">
+    <div class="home-top">
+      <div class="home-kicker">森林夜巡 · 九夜互动</div>
+      <h1 class="title">萤灯拾光</h1>
+      <div class="title-en">F I R E F L Y &nbsp; L A N T E R N</div>
+    </div>
+    <div class="home-panel">
+      <div class="home-tag">越亮，越危险。</div>
+      <p class="home-desc">
+        你是提灯的萤火精灵。收集星露，点亮九夜的萤灯——但身上的光，也在把夜蛾引来。
+      </p>
+      <div class="rules">
+        <div class="rule"><div class="n">01</div><p>走近星露即可拾取，靠近萤灯按 <b>E</b> 注入。</p></div>
+        <div class="rule key"><div class="n">02</div><p>携带越多，<b>光越亮，夜蛾追得越快</b>；被撞到会散落全部星露。</p></div>
+        <div class="rule"><div class="n">03</div><p>九夜灯更多、路更难：<b>荆棘挡路、暗潮拖慢脚步</b>，九夜全亮才算通关。</p></div>
+      </div>
+      <button class="btn" id="btnStart">开始第一夜</button>
+      <div class="home-foot">
+        <span>一个关于「什么时候把光交出去」的收集小游戏</span>
+        <span>WASD 移动 · 空格 冲刺 · E 注入</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- End -->
+  <div class="screen" id="endScreen">
+    <div class="card">
+      <div class="kicker" id="endKicker">天光初现</div>
+      <h2 class="end-title" id="endTitle">森林亮了</h2>
+      <p class="end-text" id="endText"></p>
+      <div class="stats">
+        <div class="stat"><b id="sTime">00:00</b><span>用时</span></div>
+        <div class="stat"><b id="sBank">0</b><span>注入星露</span></div>
+        <div class="stat"><b id="sHit">0</b><span>被撞到</span></div>
+        <div class="stat"><b id="sScore">0</b><span>拾光值</span></div>
+      </div>
+      <button class="btn" id="btnAgain">再点一次灯</button>
+      <button class="btn sub" id="btnRestartAll" hidden>从第一夜重来</button>
+      <button class="home-link" id="btnHome">← 回到首页</button>
+    </div>
+  </div>
+
+  <!-- Final -->
+  <div class="screen final" id="finalScreen">
+    <div class="final-inner">
+      <div class="final-kicker">九夜之后 · 全部点亮</div>
+      <h2 class="final-title">森林亮了</h2>
+      <div class="final-lanterns" id="finalLanterns"></div>
+      <p class="final-sub">五盏萤灯重新亮起，雾里的路有了方向。<br>你带回来的每一缕光，都留在了这九个夜晚里。</p>
+      <div class="final-rank"><b id="finalRank">守灯人</b><span id="finalRankNote">偶有失误，但光没有熄灭</span></div>
+      <div class="final-stats">
+        <div class="stat"><b id="fTime">00:00</b><span>总用时</span></div>
+        <div class="stat"><b id="fBank">0</b><span>点亮星露</span></div>
+        <div class="stat"><b id="fHit">0</b><span>被撞到</span></div>
+        <div class="stat"><b id="fScore">0</b><span>拾光值</span></div>
+      </div>
+      <button class="btn" id="btnFinalAgain">再走一遍九夜</button>
+      <button class="home-link" id="btnHomeFinal">← 回到首页</button>
+    </div>
+  </div>
+
+  <div class="night-toast" id="nightToast">
+    <b>第一夜</b>
+    <span>初见 · 每盏萤灯 4 份星露</span>
+  </div>
+
+  <button class="sound-btn" id="btnMute" aria-label="声音开关" title="声音开关">♪</button>
+
+  <!-- Touch controls -->
+  <div class="touch" id="touchUI">
+    <button id="btnDash">冲刺</button>
+    <button id="btnLamp">注入</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
+
